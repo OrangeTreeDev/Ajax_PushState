@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Page Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/libs/template-web.js"></script>
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+    }
+    html, body, ul, li, div {
+      margin: 0;
+      padding: 0;
+    }
+    ul, li {
+      list-style: none;
+    }
+    #tabs {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      display: flex;
+    }
+    #tabs li {
+      flex: 1;
+      text-align: center;
+      line-height: 60px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+  </div>
+  <ul id="tabs">
+    <li data-grade="one">一年级</li>
+    <li data-grade="two">二年级</li>
+    <li data-grade="three">三年级</li>
+  </ul>
+</body>
+<script id="student-list" type="text/html">
+  <ul class="students">
+    {{each data}}
+    <li class="student">
+      <span class="name">{{$value.name}}：</span>
+      <span class="score">{{$value.score}}</span>
+    </li>
+    {{/each}}
+  </ul>
+</script>
+<script>
+  var content = document.getElementById('content');
+  var tabs = document.getElementById('tabs');
+  function fetch(grade, success) {
+    var url = 'http://localhost:3000/student-lists?grade=' + grade;
+    $.ajax({
+      type: 'GET',
+      url: url,
+      success: function(data) {
+        content.innerHTML = template('student-list', data);
+        success(data);
+      },
+    });
+  }
+  tabs.addEventListener('click', function(e) {
+    var grade = e.target.getAttribute('data-grade');
+    fetch(grade, function(data) {
+      window.history.pushState({
+        grade: grade
+      }, '', ('?grage='+ grade));
+    });
+  });
+  document.addEventListener('DOMContentLoaded', function() {
+    fetch('one', function(data) {
+      window.history.replaceState({
+        grade: 'one'
+      }, '', ('?grage=one'));
+    });
+  });
+  window.onpopstate = function(e) {
+    console.log(e);
+    if (e.state) {
+      var grade = e.state.grade;
+      fetch(grade, function(e) {
+        window.history.pushState({
+        grade: grade
+      }, '', ('?grage='+ grade));
+      });
+    }
+  };
+</script>
+</html>
